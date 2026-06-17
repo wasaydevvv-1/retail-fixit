@@ -176,14 +176,14 @@ export function LoginPage() {
             </div>
           )}
 
-          {entraReady && (
-            <footer className="rf-login-footer">
-              <p>
-                Vendors can{' '}
-                <Link to="/register/vendor">register their company</Link> without an admin invite.
-              </p>
-            </footer>
-          )}
+          {/* {entraReady && (
+            // <footer className="rf-login-footer">
+            //   <p>
+            //     Vendors can{' '}
+            //     <Link to="/register/vendor">register their company</Link> without an admin invite.
+            //   </p>
+            // </footer>
+          )} */}
         </div>
       </div>
     </main>

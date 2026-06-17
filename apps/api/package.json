@@ -17,7 +17,8 @@
     "db:bootstrap": "npm run build && node dist/db/bootstrap.js",
     "db:seed-beta": "npm run build && node dist/db/seed-tenant-beta-admin.js",
     "db:seed-platform": "npm run build && node dist/db/seed-platform-admin.js",
-    "db:promote-platform": "npm run build && node dist/db/promote-platform-admin.js"
+    "db:promote-platform": "npm run build && node dist/db/promote-platform-admin.js",
+    "db:reset": "npm run build && node dist/db/reset-database.js"
   },
   "dependencies": {
     "@azure/cosmos": "^4.2.0",
