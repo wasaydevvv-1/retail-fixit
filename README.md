@@ -11,7 +11,7 @@ Operations platform for coordinating service jobs between customers and vendors.
 | Part 1 — Architecture write-up & diagrams | Word document (submitted separately) |
 | Part 2 — Code & README | This repository |
 | Part 3 — Engineering reasoning | Word document (submitted separately) |
-| Part 4 — Platform walkthrough | Loom video (pending) |
+| Part 4 — Platform walkthrough | Loom video  |
 | Azure deployment guide | Word document (submitted separately) |
 
 ---
