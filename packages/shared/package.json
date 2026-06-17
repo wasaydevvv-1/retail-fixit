@@ -1,0 +1,47 @@
+{
+  "name": "@retailfixit/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared domain model, DTOs, event schemas, and enums for RetailFixIt",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./domain": {
+      "types": "./src/domain/index.ts",
+      "import": "./dist/domain/index.js",
+      "default": "./dist/domain/index.js"
+    },
+    "./events": {
+      "types": "./src/events/index.ts",
+      "import": "./dist/events/index.js",
+      "default": "./dist/events/index.js"
+    },
+    "./dto": {
+      "types": "./src/dto/index.ts",
+      "import": "./dist/dto/index.js",
+      "default": "./dist/dto/index.js"
+    },
+    "./enums": {
+      "types": "./src/enums/index.ts",
+      "import": "./dist/enums/index.js",
+      "default": "./dist/enums/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  }
+}

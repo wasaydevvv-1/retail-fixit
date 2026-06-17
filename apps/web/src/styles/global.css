@@ -1,0 +1,552 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #0f1419;
+  color: #e7ecf3;
+}
+
+.page {
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.hint {
+  color: #9aa8bc;
+  font-size: 0.9rem;
+}
+
+.error {
+  color: #ff8a8a;
+  margin-top: 1rem;
+}
+
+.btn-primary,
+.btn-secondary {
+  display: block;
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-secondary {
+  background: #243044;
+  color: #e7ecf3;
+  border-color: #3d4f66;
+  text-align: left;
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.card {
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: #1a2332;
+  border: 1px solid #2d3a4d;
+  margin-bottom: 1rem;
+}
+
+.brand-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.brand-link:hover {
+  color: #93c5fd;
+}
+
+.btn-inline {
+  display: inline-block;
+  width: auto;
+  margin-top: 0;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 1rem;
+  color: #93c5fd;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.page-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.page-toolbar h2 {
+  margin: 0;
+}
+
+.error-alert {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: #3b1f1f;
+  border: 1px solid #7f1d1d;
+  margin: 1rem 0;
+}
+
+.error-alert p {
+  margin: 0.25rem 0 0;
+}
+
+/* Job filters layout lives in rf-theme.css */
+
+.filter-field,
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.filter-field span,
+.form-field span {
+  font-size: 0.85rem;
+  color: #9aa8bc;
+}
+
+input,
+select,
+textarea {
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #3d4f66;
+  background: #0f1419;
+  color: #e7ecf3;
+  font: inherit;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #2d3a4d;
+}
+
+.data-table th {
+  color: #9aa8bc;
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.table-link {
+  color: #93c5fd;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.table-link:hover {
+  text-decoration: underline;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pagination-page {
+  font-size: 0.9rem;
+  color: #9aa8bc;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.section-header h2 {
+  margin: 0;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.detail-grid dt {
+  font-size: 0.8rem;
+  color: #9aa8bc;
+  margin-bottom: 0.2rem;
+}
+
+.detail-grid dd {
+  margin: 0;
+}
+
+.detail-section h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  color: #9aa8bc;
+}
+
+.candidate-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+}
+
+.candidate-item {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #2d3a4d;
+}
+
+.candidate-rank {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: #243044;
+  display: grid;
+  place-items: center;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.candidate-score {
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  color: #86efac;
+}
+
+.override-notice {
+  color: #fcd34d;
+  font-size: 0.9rem;
+  margin: 0.75rem 0 0;
+  line-height: 1.45;
+}
+
+.live-indicator {
+  font-size: 0.85rem;
+  color: #93c5fd;
+  margin: 0 0 0.75rem;
+}
+
+.skeleton-row,
+.skeleton-block {
+  background: linear-gradient(90deg, #1a2332 25%, #243044 50%, #1a2332 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+  border-radius: 8px;
+}
+
+.skeleton-row {
+  height: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-block {
+  height: 4rem;
+  margin-bottom: 1rem;
+}
+
+.skeleton-block--lg {
+  height: 8rem;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Shared page utilities still used by a few legacy-layout screens */
+
+.portal-page {
+  max-width: 1200px;
+}
+
+.portal-page-header {
+  margin-bottom: 1.5rem;
+}
+
+.portal-page-header h1 {
+  margin: 0.25rem 0;
+  font-size: 1.75rem;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #93c5fd;
+}
+
+.lede {
+  margin: 0.5rem 0 0;
+  color: #9aa8bc;
+  max-width: 60ch;
+}
+
+.info-card code {
+  background: #243044;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid #3d4f66;
+  color: #e7ecf3;
+  padding: 0.5rem 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.btn-ghost:hover {
+  background: #243044;
+}
+
+.role-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-width: 220px;
+}
+
+.role-editor-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid #3d4f66;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  background: #1a2433;
+}
+
+.role-chip input {
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.permission-matrix th.matrix-perm-col {
+  font-size: 0.75rem;
+  min-width: 5.5rem;
+  text-align: center;
+  vertical-align: bottom;
+}
+
+.permission-matrix .matrix-cell {
+  text-align: center;
+}
+
+.permission-matrix .matrix-role-note {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.status-pending {
+  background: #3d3520;
+  color: #f0c674;
+}
+
+.status-active {
+  background: #1e3a2f;
+  color: #7dcea0;
+}
+
+.warning-hint {
+  color: #f0c674;
+}
+
+.entra-search-results {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  border: 1px solid #3d4f66;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.entra-result-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: none;
+  border-bottom: 1px solid #2a3548;
+  background: #1a2433;
+  color: #e7ecf3;
+  cursor: pointer;
+  text-align: left;
+}
+
+.entra-result-btn:last-child {
+  border-bottom: none;
+}
+
+.entra-result-btn:hover {
+  background: #243044;
+}
+
+.entra-result-btn span {
+  font-size: 0.82rem;
+  color: #9aa8bc;
+}
+
+.tab-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tab-btn {
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid #3d4f66;
+  background: #1a2433;
+  color: #e7ecf3;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  background: #2d5a8e;
+  border-color: #4a7ab5;
+}
+
+.upn-field {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.upn-field input {
+  flex: 1;
+}
+
+.upn-suffix {
+  color: #9aa8bc;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.credential-box {
+  background: #121a26;
+  border: 1px solid #3d4f66;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.credential-box p {
+  margin: 0 0 0.75rem;
+}
+
+.credential-box p:last-child {
+  margin-bottom: 0;
+}
+
+.credential-box span {
+  display: block;
+  font-size: 0.8rem;
+  color: #9aa8bc;
+  margin-bottom: 0.25rem;
+}
+
+.credential-box code {
+  font-size: 1rem;
+  color: #f0c674;
+}

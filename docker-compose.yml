@@ -1,0 +1,67 @@
+# RetailFixIt — local full stack (API + Web + Redis).
+# Cosmos DB and Entra ID credentials still come from apps/api/.env (Azure).
+#
+# Usage:
+#   docker compose up --build
+#   open http://localhost:8080
+#
+# API health: http://localhost:4000/health
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: retailfixit-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: retailfixit-api
+    ports:
+      - "4000:4000"
+    env_file:
+      - apps/api/.env
+    environment:
+      NODE_ENV: production
+      API_PORT: "4000"
+      REDIS_URL: redis://redis:6379
+      CORS_ORIGIN: http://localhost:8080
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4000/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: retailfixit-web
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  redis-data:

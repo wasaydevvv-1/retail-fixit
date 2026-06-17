@@ -1,0 +1,24 @@
+# Prevent host node_modules from overwriting Linux workspace symlinks in the image.
+node_modules
+**/node_modules
+
+# Build outputs are produced inside the image.
+**/dist
+**/.tsbuildinfo
+
+# Local env and secrets — injected at runtime on Container Apps.
+.env
+.env.*
+!.env.example
+
+# Git / IDE / OS noise
+.git
+.gitignore
+.cursor
+.vscode
+**/.DS_Store
+**/Thumbs.db
+
+# Docs and assessment assets (not needed in images)
+*.md
+!apps/web/nginx.docker.conf
