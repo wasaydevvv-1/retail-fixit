@@ -1,17 +1,18 @@
 import { useState } from 'react';
-import { UserRole, type TenantUserSummary, type UserRole as UserRoleType } from '@retailfixit/shared';
+import {
+  ROLE_LABELS,
+  UserRole,
+  assignableRolesForManager,
+  canManagerEditUserRoles,
+  type TenantUserSummary,
+  type UserRole as UserRoleType,
+} from '@retailfixit/shared';
 
 import { ErrorAlert } from '../../../components/ErrorAlert.js';
 import { useToast } from '../../../components/ToastProvider.js';
 import { friendlyError } from '../../../lib/user-messages.js';
 import { apiFetch } from '../../../lib/api-client.js';
-
-const ROLE_OPTIONS: { value: UserRoleType; label: string }[] = [
-  { value: UserRole.Admin, label: 'Tenant administrator' },
-  { value: UserRole.Dispatcher, label: 'Dispatcher' },
-  { value: UserRole.VendorManager, label: 'Vendor manager' },
-  { value: UserRole.SupportAgent, label: 'Support agent' },
-];
+import { useAuth } from '../../auth/AuthProvider.js';
 
 interface UserRoleEditorProps {
   user: TenantUserSummary;
@@ -20,13 +21,24 @@ interface UserRoleEditorProps {
 
 export function UserRoleEditor({ user, onSaved }: UserRoleEditorProps) {
   const { toast } = useToast();
-  const isPlatformUser = user.roles.includes(UserRole.PlatformAdmin);
+  const { user: actor } = useAuth();
+  const managerRoles = actor?.roles ?? [];
+  const editable = canManagerEditUserRoles(managerRoles, user.roles);
+  const roleOptions = assignableRolesForManager(managerRoles).map((value) => ({
+    value,
+    label: ROLE_LABELS[value],
+  }));
+
   const [roles, setRoles] = useState<UserRoleType[]>(user.roles);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (isPlatformUser) {
+  if (user.roles.includes(UserRole.PlatformAdmin)) {
     return <span className="hint">This account type cannot be changed here.</span>;
+  }
+
+  if (!editable) {
+    return <span>{user.roles.map((role) => ROLE_LABELS[role] ?? role).join(', ')}</span>;
   }
 
   const dirty =
@@ -64,7 +76,7 @@ export function UserRoleEditor({ user, onSaved }: UserRoleEditorProps) {
   return (
     <div className="role-editor">
       <div className="role-editor-options">
-        {ROLE_OPTIONS.map((option) => (
+        {roleOptions.map((option) => (
           <label key={option.value} className="role-chip">
             <input
               type="checkbox"

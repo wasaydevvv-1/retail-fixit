@@ -6,7 +6,7 @@ import type {
   UpdateUserRolesRequest,
   UserAccount,
 } from '@retailfixit/shared';
-import { Permission, UserRole, hasPermission, isPlatformAdmin, isBusinessTenant } from '@retailfixit/shared';
+import { Permission, UserRole, hasPermission, isPlatformAdmin, isBusinessTenant, validateAssignableRoles, canManagerEditUserRoles } from '@retailfixit/shared';
 import { PLATFORM_TENANT_ID } from '@retailfixit/shared';
 import { v4 as uuid } from 'uuid';
 import { z } from 'zod';
@@ -21,6 +21,7 @@ import {
   isPendingUserId,
   linkUserToVendor,
   listUsersByTenant,
+  listAllUsers,
   upsertUser,
 } from '../auth/users.repository.js';
 import { findVendorById } from '../vendors/vendors.repository.js';
@@ -89,18 +90,37 @@ async function toTenantUserSummary(
 
 export async function listTenantUsers(
   auth: AuthContext,
-  requestedTenantId?: string,
+  options?: { tenantId?: string; role?: UserRole },
 ): Promise<TenantUserSummary[]> {
-  let tenantId = auth.tenantId;
-  if (requestedTenantId && requestedTenantId !== auth.tenantId) {
-    if (!isPlatformAdmin(auth.roles)) {
-      throw new AppError(403, 'FORBIDDEN', 'Only platform admins can list users in other tenants');
+  if (isPlatformAdmin(auth.roles)) {
+    let users: Awaited<ReturnType<typeof listUsersByTenant>>;
+
+    if (options?.tenantId) {
+      if (!isBusinessTenant(options.tenantId)) {
+        throw new AppError(400, 'INVALID_TENANT', 'Select a business tenant');
+      }
+      users = await listUsersByTenant(options.tenantId);
+    } else {
+      users = (await listAllUsers()).filter((user) => isBusinessTenant(user.tenantId));
     }
-    tenantId = requestedTenantId;
+
+    if (options?.role) {
+      users = users.filter((user) => user.roles.includes(options.role!));
+    }
+
+    return Promise.all(users.map((user) => toTenantUserSummary(user.tenantId, user)));
   }
 
-  const users = await listUsersByTenant(tenantId);
-  return Promise.all(users.map((user) => toTenantUserSummary(tenantId, user)));
+  if (options?.tenantId && options.tenantId !== auth.tenantId) {
+    throw new AppError(403, 'FORBIDDEN', 'Only platform admins can list users in other tenants');
+  }
+
+  let users = await listUsersByTenant(auth.tenantId);
+  if (options?.role) {
+    users = users.filter((user) => user.roles.includes(options.role!));
+  }
+
+  return Promise.all(users.map((user) => toTenantUserSummary(auth.tenantId, user)));
 }
 
 async function resolveEntraUserId(user: UserAccount): Promise<string | undefined> {
@@ -124,6 +144,11 @@ export async function adminCreateUser(
 
   if (body.roles.includes(UserRole.PlatformAdmin)) {
     throw new AppError(403, 'FORBIDDEN', 'Platform admin accounts cannot be created from this form');
+  }
+
+  const roleCheck = validateAssignableRoles(auth.roles, body.roles);
+  if (!roleCheck.ok) {
+    throw new AppError(403, 'FORBIDDEN', roleCheck.message);
   }
 
   const platformOperator = isPlatformAdmin(auth.roles);
@@ -269,6 +294,15 @@ export async function adminUpdateUserRoles(
 
   if (body.roles.includes(UserRole.PlatformAdmin)) {
     throw new AppError(403, 'FORBIDDEN', 'Platform admin role cannot be assigned here');
+  }
+
+  if (!canManagerEditUserRoles(auth.roles, user.roles)) {
+    throw new AppError(403, 'FORBIDDEN', 'You cannot change roles for this user');
+  }
+
+  const roleCheck = validateAssignableRoles(auth.roles, body.roles);
+  if (!roleCheck.ok) {
+    throw new AppError(403, 'FORBIDDEN', roleCheck.message);
   }
 
   if (!isPlatformAdmin(auth.roles)) {

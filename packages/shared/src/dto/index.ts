@@ -2,7 +2,7 @@
  * Request/response Data Transfer Objects shared between the API and the SPA.
  */
 
-import type { Assignment, Job, Vendor, AIRecommendation } from '../domain/index.js';
+import type { Assignment, Job, Tenant, Vendor, AIRecommendation } from '../domain/index.js';
 import type { JobPriority, JobStatus, UserRole, VendorStatus } from '../enums/index.js';
 import type { Permission, RolePermissionMatrix } from '../rbac/index.js';
 
@@ -31,6 +31,8 @@ export interface JobListQuery {
   status?: JobStatus;
   priority?: JobPriority;
   search?: string;
+  /** Platform operators query a business tenant explicitly. */
+  tenantId?: string;
 }
 
 export interface Paginated<T> {
@@ -68,6 +70,8 @@ export interface VendorListQuery {
   search?: string;
   /** Return vendors that have at least one of these skills. */
   skills?: string[];
+  /** Platform operators query a business tenant explicitly. */
+  tenantId?: string;
 }
 
 export type VendorListResponse = Paginated<Vendor>;
@@ -107,6 +111,13 @@ export interface AuthUserResponse {
   /** Cross-tenant operator (provisions tenant admins). */
   isPlatformAdmin: boolean;
 }
+
+export interface CreateTenantRequest {
+  /** Display name, e.g. "Gamma Retail Co". */
+  name: string;
+}
+
+export type CreateTenantResponse = Tenant;
 
 /** Tenant user row for admin user management. */
 export interface TenantUserSummary {

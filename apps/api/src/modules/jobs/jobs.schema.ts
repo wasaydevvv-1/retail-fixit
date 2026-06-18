@@ -42,4 +42,5 @@ export const jobListQuerySchema = z.object({
     .enum([JobPriority.Low, JobPriority.Medium, JobPriority.High, JobPriority.Critical])
     .optional(),
   search: z.string().max(200).optional(),
+  tenantId: z.string().min(1).optional(),
 });

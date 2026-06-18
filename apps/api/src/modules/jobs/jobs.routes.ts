@@ -6,6 +6,7 @@ import { requirePermission } from '../../middleware/authorize.js';
 import { AppError } from '../../middleware/error.js';
 import { assignVendorToJob } from '../assignments/assignments.service.js';
 import { assignJobSchema } from '../assignments/assignments.schema.js';
+import { resolveDataTenantId } from '../../lib/tenant-scope.js';
 import { createJob, getJobDetail, getJobList } from './jobs.service.js';
 import { createJobSchema, jobListQuerySchema } from './jobs.schema.js';
 
@@ -39,7 +40,9 @@ jobsRouter.get('/:id', requirePermission(Permission.JobsRead), async (req, res, 
     if (!jobId) {
       throw new AppError(400, 'INVALID_JOB_ID', 'Job id is required');
     }
-    const detail = await getJobDetail(req.auth!, jobId);
+    const tenantId =
+      typeof req.query.tenantId === 'string' ? req.query.tenantId : undefined;
+    const detail = await getJobDetail(req.auth!, jobId, tenantId);
     if (!detail) {
       throw new AppError(404, 'JOB_NOT_FOUND', 'Job not found');
     }

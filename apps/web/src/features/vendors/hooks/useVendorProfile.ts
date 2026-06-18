@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { VendorProfileRequest } from '@retailfixit/shared';
+import type { VendorListQuery, VendorProfileRequest } from '@retailfixit/shared';
 
 import { getMyAssignedJobs, getMyAssignedJob, getMyVendorProfile, listVendors, saveMyVendorProfile } from '../api.js';
 
 export const vendorQueryKeys = {
   me: ['vendors', 'me'] as const,
-  list: (page: number) => ['vendors', 'list', page] as const,
+  list: (query: VendorListQuery) => ['vendors', 'list', query] as const,
   myJobs: (page: number) => ['vendors', 'my-jobs', page] as const,
   myJob: (id: string) => ['vendors', 'my-jobs', 'detail', id] as const,
 };
@@ -17,10 +17,10 @@ export function useMyVendorProfile() {
   });
 }
 
-export function useVendorDirectory(page = 1) {
+export function useVendorDirectory(query: VendorListQuery = { page: 1, pageSize: 20 }) {
   return useQuery({
-    queryKey: vendorQueryKeys.list(page),
-    queryFn: () => listVendors(page),
+    queryKey: vendorQueryKeys.list(query),
+    queryFn: () => listVendors(query),
   });
 }
 

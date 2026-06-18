@@ -7,6 +7,7 @@
  */
 
 import { UserRole } from '../enums/index.js';
+import { isPlatformAdmin } from '../platform/index.js';
 
 export const Permission = {
   /** View jobs (list + detail). */
@@ -27,6 +28,8 @@ export const Permission = {
   UsersManage: 'users:manage',
   /** List business tenants (platform admin only). */
   TenantsRead: 'tenants:read',
+  /** Create business tenants (platform admin only). */
+  TenantsManage: 'tenants:manage',
 } as const;
 export type Permission = (typeof Permission)[keyof typeof Permission];
 
@@ -42,6 +45,7 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
   [Permission.UsersRead]: 'View users (read-only)',
   [Permission.UsersManage]: 'Manage users & role permissions',
   [Permission.TenantsRead]: 'View all business tenants',
+  [Permission.TenantsManage]: 'Create business tenants',
 };
 
 export const ROLE_LABELS: Record<UserRole, string> = {
@@ -65,8 +69,11 @@ export type RolePermissionMatrix = Record<UserRole, Permission[]>;
 export const DEFAULT_ROLE_PERMISSIONS: RolePermissionMatrix = {
   [UserRole.PlatformAdmin]: [
     Permission.TenantsRead,
+    Permission.TenantsManage,
     Permission.UsersRead,
     Permission.UsersManage,
+    Permission.JobsRead,
+    Permission.VendorsRead,
   ],
   [UserRole.Admin]: [...ALL_PERMISSIONS],
   [UserRole.Dispatcher]: [
@@ -131,4 +138,54 @@ export function hasPermission(
   matrix: RolePermissionMatrix = DEFAULT_ROLE_PERMISSIONS,
 ): boolean {
   return roles.some((role) => (matrix[role] ?? []).includes(permission));
+}
+
+/** Roles a platform admin may assign when provisioning users. */
+export const ROLES_PLATFORM_ADMIN_MAY_ASSIGN: UserRole[] = [UserRole.Admin];
+
+/** Roles a tenant admin may assign to staff in their organization. */
+export const ROLES_TENANT_ADMIN_MAY_ASSIGN: UserRole[] = [
+  UserRole.Dispatcher,
+  UserRole.VendorManager,
+  UserRole.SupportAgent,
+];
+
+export function assignableRolesForManager(managerRoles: UserRole[]): UserRole[] {
+  return isPlatformAdmin(managerRoles)
+    ? ROLES_PLATFORM_ADMIN_MAY_ASSIGN
+    : ROLES_TENANT_ADMIN_MAY_ASSIGN;
+}
+
+export function validateAssignableRoles(
+  managerRoles: UserRole[],
+  requestedRoles: UserRole[],
+): { ok: true } | { ok: false; message: string } {
+  if (requestedRoles.includes(UserRole.PlatformAdmin)) {
+    return { ok: false, message: 'Platform admin role cannot be assigned here' };
+  }
+
+  const allowed = new Set(assignableRolesForManager(managerRoles));
+  const invalid = requestedRoles.filter((role) => !allowed.has(role));
+  if (invalid.length > 0) {
+    return {
+      ok: false,
+      message: isPlatformAdmin(managerRoles)
+        ? 'Platform admins may only assign the tenant admin role'
+        : 'Tenant admins may only assign dispatcher, vendor manager, and support agent roles',
+    };
+  }
+
+  return { ok: true };
+}
+
+/** Whether the acting admin may change roles for the target user. */
+export function canManagerEditUserRoles(
+  managerRoles: UserRole[],
+  targetUserRoles: UserRole[],
+): boolean {
+  if (targetUserRoles.includes(UserRole.PlatformAdmin)) return false;
+  if (isPlatformAdmin(managerRoles)) {
+    return targetUserRoles.includes(UserRole.Admin);
+  }
+  return !targetUserRoles.includes(UserRole.Admin);
 }

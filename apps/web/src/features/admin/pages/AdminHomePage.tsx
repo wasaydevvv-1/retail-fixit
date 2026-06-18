@@ -2,13 +2,19 @@ import { Permission } from '@retailfixit/shared';
 import { Link } from 'react-router-dom';
 
 import { useAuth } from '../../auth/AuthProvider.js';
+import { useBusinessTenantScope } from '../../../lib/use-business-tenant-scope.js';
 import { useJobs } from '../../jobs/hooks/useJobs.js';
 import { useVendorDirectory } from '../../vendors/hooks/useVendorProfile.js';
 
 export function AdminHomePage() {
   const { user, can } = useAuth();
-  const { data: jobsData } = useJobs({ page: 1, pageSize: 1 });
-  const { data: vendorsData } = useVendorDirectory(1);
+  const { isPlatformAdmin, tenantId } = useBusinessTenantScope();
+  const jobQuery = isPlatformAdmin ? { page: 1, pageSize: 1, tenantId } : { page: 1, pageSize: 1 };
+  const vendorQuery = isPlatformAdmin
+    ? { page: 1, pageSize: 1, tenantId }
+    : { page: 1, pageSize: 1 };
+  const { data: jobsData } = useJobs(jobQuery);
+  const { data: vendorsData } = useVendorDirectory(vendorQuery);
 
   const totalJobs = jobsData?.total ?? '—';
   const totalVendors = vendorsData?.total ?? '—';
@@ -86,6 +92,17 @@ export function AdminHomePage() {
                 </div>
               </Link>
             )}
+            {can(Permission.JobsRead) &&
+              !can(Permission.JobsCreate) &&
+              !can(Permission.JobsAssign) && (
+                <Link to="/support/jobs" className="rf-quick-card">
+                  <span className="rf-quick-icon">▣</span>
+                  <div>
+                    <strong>Job lookup</strong>
+                    <p>Read-only job search</p>
+                  </div>
+                </Link>
+              )}
             {can(Permission.JobsRead) &&
               (can(Permission.JobsCreate) || can(Permission.JobsAssign)) && (
                 <Link to="/dispatch/jobs" className="rf-quick-card">

@@ -35,3 +35,18 @@ export async function findTenantById(tenantId: string): Promise<Tenant | null> {
     throw err;
   }
 }
+
+export async function createTenantDocument(
+  id: string,
+  name: string,
+): Promise<Tenant> {
+  const container = getContainer('tenants');
+  const doc: TenantDocument = {
+    id,
+    type: 'tenant',
+    name,
+    createdAt: new Date().toISOString(),
+  };
+  await container.items.create(doc);
+  return toTenant(doc);
+}

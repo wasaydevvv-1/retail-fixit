@@ -1,6 +1,15 @@
-import type { Job, JobListResponse, Vendor, VendorListResponse, VendorProfileRequest, VendorRatingRequest } from '@retailfixit/shared';
+import type { Job, JobListQuery, JobListResponse, Vendor, VendorListQuery, VendorListResponse, VendorProfileRequest, VendorRatingRequest } from '@retailfixit/shared';
 
 import { apiFetch } from '../../lib/api-client.js';
+
+function vendorQueryString(query: VendorListQuery = {}): string {
+  const params = new URLSearchParams();
+  if (query.page) params.set('page', String(query.page));
+  if (query.pageSize) params.set('pageSize', String(query.pageSize));
+  if (query.tenantId) params.set('tenantId', query.tenantId);
+  const qs = params.toString();
+  return qs ? `?${qs}` : '';
+}
 
 export function getMyVendorProfile(): Promise<Vendor | null> {
   return apiFetch<Vendor | null>('/vendors/me');
@@ -13,8 +22,8 @@ export function saveMyVendorProfile(body: VendorProfileRequest): Promise<Vendor>
   });
 }
 
-export function listVendors(page = 1): Promise<VendorListResponse> {
-  return apiFetch<VendorListResponse>(`/vendors?page=${page}&pageSize=20`);
+export function listVendors(query: VendorListQuery = {}): Promise<VendorListResponse> {
+  return apiFetch<VendorListResponse>(`/vendors${vendorQueryString({ pageSize: 20, ...query })}`);
 }
 
 export function updateVendorRating(vendorId: string, body: VendorRatingRequest): Promise<Vendor> {

@@ -1,4 +1,4 @@
-import { Permission } from '@retailfixit/shared';
+import { Permission, UserRole } from '@retailfixit/shared';
 import { Router } from 'express';
 
 import { authenticate } from '../../middleware/authenticate.js';
@@ -14,7 +14,11 @@ usersRouter.use(authenticate);
 usersRouter.get('/', requirePermission(Permission.UsersRead), async (req, res, next) => {
   try {
     const tenantId = typeof req.query.tenantId === 'string' ? req.query.tenantId : undefined;
-    const users = await listTenantUsers(req.auth!, tenantId);
+    const roleRaw = typeof req.query.role === 'string' ? req.query.role : undefined;
+    const role = roleRaw && (Object.values(UserRole) as string[]).includes(roleRaw)
+      ? (roleRaw as UserRole)
+      : undefined;
+    const users = await listTenantUsers(req.auth!, { tenantId, role });
     res.json(users);
   } catch (err) {
     next(err);

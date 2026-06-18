@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import type { JobListQuery } from '@retailfixit/shared';
 import { Permission } from '@retailfixit/shared';
 
+import { BusinessTenantPicker } from '../../../components/BusinessTenantPicker.js';
 import { ErrorAlert } from '../../../components/ErrorAlert.js';
 import { useAuth } from '../../auth/AuthProvider.js';
+import { useBusinessTenantScope } from '../../../lib/use-business-tenant-scope.js';
 import { JobFilters } from '../components/JobFilters.js';
 import { JobListSkeleton } from '../components/JobListSkeleton.js';
 import { JobTable } from '../components/JobTable.js';
@@ -25,18 +27,35 @@ export function JobDashboardPage() {
   const { can } = useAuth();
   const base = useJobsBasePath();
   const isSupport = base === '/support';
+  const { isPlatformAdmin, tenantId, selectedTenantId, setSelectedTenantId, tenants } =
+    useBusinessTenantScope();
   const [filters, setFilters] = useState<JobListQuery>({ page: 1, pageSize: 20 });
   const debouncedSearch = useDebouncedValue(filters.search, 300);
 
   const queryFilters = useMemo(
-    () => ({ ...filters, search: debouncedSearch }),
-    [filters, debouncedSearch],
+    () => ({
+      ...filters,
+      search: debouncedSearch,
+      ...(isPlatformAdmin ? { tenantId } : {}),
+    }),
+    [filters, debouncedSearch, isPlatformAdmin, tenantId],
   );
 
   const { data, isLoading, isError, error, isFetching } = useJobs(queryFilters);
 
   return (
     <div className="rf-page">
+      {isPlatformAdmin && (
+        <section className="rf-panel rf-panel-toolbar">
+          <BusinessTenantPicker
+            value={selectedTenantId}
+            onChange={setSelectedTenantId}
+            tenants={tenants ?? []}
+          />
+          <p className="hint">View-only access — dispatch and assignment actions are restricted.</p>
+        </section>
+      )}
+
       {!isSupport && can(Permission.JobsCreate) && (
         <QueueIntelligenceCard data={data} isLoading={isLoading} />
       )}
@@ -49,8 +68,9 @@ export function JobDashboardPage() {
           <div>
             <strong>Ops IQ</strong>
             <p className="hint">
-              View-only access for support agents. Search jobs by title, customer, or location —
-              dispatch and assignment actions are restricted.
+              {isPlatformAdmin
+                ? 'Platform view-only access. Browse jobs across business tenants — no dispatch or assignment actions.'
+                : 'View-only access for support agents. Search jobs by title, customer, or location — dispatch and assignment actions are restricted.'}
             </p>
           </div>
         </article>
@@ -74,7 +94,7 @@ export function JobDashboardPage() {
           <ErrorAlert error={error} title="Failed to load jobs" />
         ) : (
           <>
-            <JobTable jobs={data?.items ?? []} />
+            <JobTable jobs={data?.items ?? []} tenantId={isPlatformAdmin ? tenantId : undefined} />
             <Pagination
               page={data?.page ?? 1}
               pageSize={data?.pageSize ?? 20}

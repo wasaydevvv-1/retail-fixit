@@ -17,6 +17,7 @@ function toQueryString(query: JobListQuery): string {
   if (query.status) params.set('status', query.status);
   if (query.priority) params.set('priority', query.priority);
   if (query.search) params.set('search', query.search);
+  if (query.tenantId) params.set('tenantId', query.tenantId);
   const qs = params.toString();
   return qs ? `?${qs}` : '';
 }
@@ -25,8 +26,9 @@ export function listJobs(query: JobListQuery = {}): Promise<JobListResponse> {
   return apiFetch<JobListResponse>(`/jobs${toQueryString(query)}`);
 }
 
-export function getJob(id: string): Promise<JobDetailResponse> {
-  return apiFetch<JobDetailResponse>(`/jobs/${id}`);
+export function getJob(id: string, tenantId?: string): Promise<JobDetailResponse> {
+  const qs = tenantId ? `?tenantId=${encodeURIComponent(tenantId)}` : '';
+  return apiFetch<JobDetailResponse>(`/jobs/${id}${qs}`);
 }
 
 export function createJob(body: CreateJobRequest): Promise<Job> {

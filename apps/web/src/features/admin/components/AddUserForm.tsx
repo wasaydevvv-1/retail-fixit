@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import {
   UserRole,
+  assignableRolesForManager,
   type CreateTenantUserRequest,
   type CreateTenantUserResponse,
   type EntraConfigResponse,
@@ -14,12 +15,13 @@ import { useAuth } from '../../auth/AuthProvider.js';
 import { useTenants } from '../hooks/useTenants.js';
 import { apiFetch } from '../../../lib/api-client.js';
 
-const TENANT_STAFF_ROLES: { value: UserRoleType; label: string; description: string }[] = [
-  { value: UserRole.Admin, label: 'Tenant admin', description: 'Manage users and settings for this tenant' },
-  { value: UserRole.Dispatcher, label: 'Dispatcher', description: 'Create and assign jobs' },
-  { value: UserRole.VendorManager, label: 'Vendor manager', description: 'Manage vendor company' },
-  { value: UserRole.SupportAgent, label: 'Support agent', description: 'Read-only job lookup' },
-];
+const ROLE_DESCRIPTIONS: Record<UserRoleType, string> = {
+  [UserRole.PlatformAdmin]: 'Cross-tenant operator',
+  [UserRole.Admin]: 'Manage users and settings for this tenant',
+  [UserRole.Dispatcher]: 'Create and assign jobs',
+  [UserRole.VendorManager]: 'Manage vendor company',
+  [UserRole.SupportAgent]: 'Read-only job lookup',
+};
 
 interface AddUserFormProps {
   onCreated: (user: TenantUserSummary) => void;
@@ -28,6 +30,21 @@ interface AddUserFormProps {
 export function AddUserForm({ onCreated }: AddUserFormProps) {
   const { user } = useAuth();
   const isPlatformAdmin = user?.isPlatformAdmin ?? false;
+  const assignableRoles = assignableRolesForManager(user?.roles ?? []);
+  const roleOptions = assignableRoles.map((value) => ({
+    value,
+    label:
+      value === UserRole.Admin
+        ? 'Tenant admin'
+        : value === UserRole.Dispatcher
+          ? 'Dispatcher'
+          : value === UserRole.VendorManager
+            ? 'Vendor manager'
+            : 'Support agent',
+    description: ROLE_DESCRIPTIONS[value],
+  }));
+  const defaultRole = assignableRoles[0] ?? UserRole.Dispatcher;
+
   const { data: tenants } = useTenants(isPlatformAdmin);
   const [open, setOpen] = useState(false);
   const [tenantId, setTenantId] = useState(
@@ -38,7 +55,7 @@ export function AddUserForm({ onCreated }: AddUserFormProps) {
   const [password, setPassword] = useState('');
   const [autoPassword, setAutoPassword] = useState(true);
   const [displayName, setDisplayName] = useState('');
-  const [role, setRole] = useState<UserRoleType>(UserRole.Dispatcher);
+  const [role, setRole] = useState<UserRoleType>(defaultRole);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdCredentials, setCreatedCredentials] = useState<CreateTenantUserResponse | null>(null);
@@ -50,12 +67,16 @@ export function AddUserForm({ onCreated }: AddUserFormProps) {
       .catch(() => setEntraConfig({ graphEnabled: false, canCreateUsers: false }));
   }, [open]);
 
+  useEffect(() => {
+    setRole(defaultRole);
+  }, [defaultRole]);
+
   function reset() {
     setUserName('');
     setPassword('');
     setAutoPassword(true);
     setDisplayName('');
-    setRole(UserRole.Dispatcher);
+    setRole(defaultRole);
     setTenantId(isPlatformAdmin ? 'tenant_acme' : (user?.tenantId ?? 'tenant_acme'));
     setError(null);
     setCreatedCredentials(null);
@@ -165,8 +186,8 @@ export function AddUserForm({ onCreated }: AddUserFormProps) {
         <h3>Add user</h3>
         <p>
           {isPlatformAdmin
-            ? 'Create a tenant admin or staff member in Acme or Beta.'
-            : 'Create staff for your tenant only.'}
+            ? 'Provision a tenant admin for Acme or Beta.'
+            : 'Create dispatcher, vendor manager, or support agent staff for your tenant.'}
         </p>
       </header>
 
@@ -191,7 +212,7 @@ export function AddUserForm({ onCreated }: AddUserFormProps) {
               ))}
             </select>
           </label>
-          <p className="rf-field-hint">Create tenant admins for Acme or Beta — not platform operator accounts.</p>
+          <p className="rf-field-hint">Platform operators provision tenant admins only.</p>
         </section>
       ) : (
         <section className="rf-form-section">
@@ -261,7 +282,7 @@ export function AddUserForm({ onCreated }: AddUserFormProps) {
         <h4>Role</h4>
         <p className="rf-field-hint">One role per user.</p>
         <div className="rf-role-grid">
-          {TENANT_STAFF_ROLES.map((option) => (
+          {roleOptions.map((option) => (
             <label
               key={option.value}
               className={`rf-role-card${role === option.value ? ' rf-role-card--active' : ''}`}

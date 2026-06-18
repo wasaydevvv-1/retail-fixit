@@ -5,6 +5,7 @@ import { useAuth } from './AuthProvider.js';
 import { isEntraConfiguredOnWeb } from './auth-config.js';
 import { ApiClientError } from '../../lib/api-client.js';
 import { friendlyUserMessage } from '../../lib/user-messages.js';
+import { useDocumentTitle } from '../../lib/use-document-title.js';
 
 function MicrosoftIcon() {
   return (
@@ -22,6 +23,7 @@ export function LoginPage() {
   const location = useLocation();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  useDocumentTitle('Sign in');
 
   if (!isLoading && user) {
     return <Navigate to={(location.state as { from?: string } | null)?.from ?? user.homePath} replace />;

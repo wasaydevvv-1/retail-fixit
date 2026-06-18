@@ -15,6 +15,7 @@ import {
   invalidateVendorListCache,
   setCachedVendorList,
 } from '../../cache/vendor-list-cache.js';
+import { resolveDataTenantId } from '../../lib/tenant-scope.js';
 import { AppError } from '../../middleware/error.js';
 import type { AuthContext } from '../auth/auth.types.js';
 import { linkUserToVendor } from '../auth/users.repository.js';
@@ -47,6 +48,7 @@ export async function getVendorList(
   auth: AuthContext,
   query: VendorListQuery,
 ): Promise<VendorListResponse> {
+  const tenantId = resolveDataTenantId(auth, query.tenantId);
   const normalized = {
     page: query.page ?? 1,
     pageSize: query.pageSize ?? 20,
@@ -55,19 +57,21 @@ export async function getVendorList(
     skills: query.skills,
   };
 
-  const cached = await getCachedVendorList(auth.tenantId, normalized);
+  const cached = await getCachedVendorList(tenantId, normalized);
   if (cached) return cached;
 
-  const result = await listVendors(auth.tenantId, normalized);
-  await setCachedVendorList(auth.tenantId, normalized, result);
+  const result = await listVendors(tenantId, normalized);
+  await setCachedVendorList(tenantId, normalized, result);
   return result;
 }
 
 export async function getVendorById(
   auth: AuthContext,
   vendorId: string,
+  requestedTenantId?: string,
 ): Promise<Vendor | null> {
-  return findVendorById(auth.tenantId, vendorId);
+  const tenantId = resolveDataTenantId(auth, requestedTenantId);
+  return findVendorById(tenantId, vendorId);
 }
 
 export async function getAssignableVendorsForJob(

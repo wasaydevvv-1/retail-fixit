@@ -1,7 +1,8 @@
 import type { TenantUserSummary } from '@retailfixit/shared';
-import { Permission } from '@retailfixit/shared';
+import { Permission, UserRole } from '@retailfixit/shared';
 import { useState } from 'react';
 
+import { BusinessTenantPicker, USER_ROLE_FILTER_OPTIONS, formatRoleLabel } from '../../../components/BusinessTenantPicker.js';
 import { ErrorAlert } from '../../../components/ErrorAlert.js';
 import { useAuth } from '../../auth/AuthProvider.js';
 import { AddUserForm } from '../components/AddUserForm.js';
@@ -13,11 +14,12 @@ export function AdminUsersPage() {
   const { user, can, loadCurrentUser } = useAuth();
   const isPlatformAdmin = user?.isPlatformAdmin ?? false;
   const { data: tenants } = useTenants(isPlatformAdmin);
-  const [selectedTenantId, setSelectedTenantId] = useState(
-    isPlatformAdmin ? 'tenant_acme' : (user?.tenantId ?? 'tenant_acme'),
-  );
-  const listTenantId = isPlatformAdmin ? selectedTenantId : undefined;
-  const { data, isLoading, isError, error, refetch } = useTenantUsers(listTenantId);
+  const [tenantFilter, setTenantFilter] = useState('');
+  const [roleFilter, setRoleFilter] = useState<'' | UserRole>('');
+  const { data, isLoading, isError, error, refetch } = useTenantUsers({
+    tenantId: isPlatformAdmin && tenantFilter ? tenantFilter : undefined,
+    role: roleFilter || undefined,
+  });
 
   async function handleRolesSaved(updated: TenantUserSummary) {
     await refetch();
@@ -30,21 +32,26 @@ export function AdminUsersPage() {
     <div className="rf-page">
       <p className="hint rf-page-lede">
         {isPlatformAdmin
-          ? 'Select a business tenant, then add its tenant admin or staff. Tenant admins manage only their own tenant.'
+          ? 'View users across all business tenants. Platform operators provision tenant admins only; tenant admins add dispatchers, vendor managers, and support agents.'
           : 'Add staff for your organization. Each tenant only sees its own users and jobs.'}
       </p>
 
       {isPlatformAdmin && (
-        <section className="rf-panel">
+        <section className="rf-panel rf-panel-toolbar">
+          <BusinessTenantPicker
+            value={tenantFilter}
+            onChange={setTenantFilter}
+            tenants={[{ id: '', name: 'All tenants' }, ...(tenants ?? [])]}
+          />
           <label className="rf-field">
-            <span>View users for tenant</span>
+            <span>Role</span>
             <select
-              value={selectedTenantId}
-              onChange={(e) => setSelectedTenantId(e.target.value)}
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value as '' | UserRole)}
             >
-              {(tenants ?? []).map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
+              {USER_ROLE_FILTER_OPTIONS.map((option) => (
+                <option key={option.value || 'all'} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
@@ -87,7 +94,7 @@ export function AdminUsersPage() {
                       {can(Permission.UsersManage) ? (
                         <UserRoleEditor user={u} onSaved={handleRolesSaved} />
                       ) : (
-                        u.roles.join(', ')
+                        u.roles.map(formatRoleLabel).join(', ')
                       )}
                     </td>
                     <td>{u.vendorName ?? '—'}</td>

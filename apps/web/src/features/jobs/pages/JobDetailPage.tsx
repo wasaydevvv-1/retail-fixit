@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { JobStatus } from '@retailfixit/shared';
 
 import { useJobsBasePath } from '../../../lib/use-jobs-base-path.js';
@@ -9,12 +9,19 @@ import { JobPriorityBadge } from '../components/JobPriorityBadge.js';
 import { JobStatusBadge } from '../components/JobStatusBadge.js';
 import { RecommendationPanel } from '../components/RecommendationPanel.js';
 import { useJob } from '../hooks/useJob.js';
+import { useAuth } from '../../auth/AuthProvider.js';
 
 export function JobDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  const tenantId =
+    user?.isPlatformAdmin && searchParams.get('tenantId')
+      ? searchParams.get('tenantId')!
+      : undefined;
   const base = useJobsBasePath();
   const isSupport = base === '/support';
-  const { data, isLoading, isError, error } = useJob(id);
+  const { data, isLoading, isError, error } = useJob(id, tenantId);
 
   if (isLoading) {
     return <JobDetailSkeleton />;

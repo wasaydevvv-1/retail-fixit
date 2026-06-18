@@ -83,7 +83,9 @@ vendorsRouter.get('/:id', requirePermission(Permission.VendorsRead), async (req,
     if (!vendorId) {
       throw new AppError(400, 'INVALID_VENDOR_ID', 'Vendor id is required');
     }
-    const vendor = await getVendorById(req.auth!, vendorId);
+    const tenantId =
+      typeof req.query.tenantId === 'string' ? req.query.tenantId : undefined;
+    const vendor = await getVendorById(req.auth!, vendorId, tenantId);
     if (!vendor) {
       throw new AppError(404, 'VENDOR_NOT_FOUND', 'Vendor not found');
     }

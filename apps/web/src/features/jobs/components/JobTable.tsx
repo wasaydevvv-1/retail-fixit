@@ -7,15 +7,22 @@ import { JobStatusBadge } from './JobStatusBadge.js';
 
 interface JobTableProps {
   jobs: Job[];
+  /** Preserved in links for platform operators querying business tenants. */
+  tenantId?: string;
 }
 
 interface OutletContext {
   flashJobId?: string | null;
 }
 
-export function JobTable({ jobs }: JobTableProps) {
+export function JobTable({ jobs, tenantId }: JobTableProps) {
   const base = useJobsBasePath();
   const { flashJobId } = useOutletContext<OutletContext>();
+
+  function jobHref(jobId: string): string {
+    const path = `${base}/jobs/${jobId}`;
+    return tenantId ? `${path}?tenantId=${encodeURIComponent(tenantId)}` : path;
+  }
 
   if (jobs.length === 0) {
     return (
@@ -51,7 +58,7 @@ export function JobTable({ jobs }: JobTableProps) {
               className={flashJobId === job.id ? 'rf-row-flash' : undefined}
             >
               <td>
-                <Link to={`${base}/jobs/${job.id}`} className="rf-job-link">
+                <Link to={jobHref(job.id)} className="rf-job-link">
                   <span className="rf-job-link-title">{job.title}</span>
                   <span className="rf-job-link-id">#{job.id.slice(0, 8)}</span>
                 </Link>
@@ -66,7 +73,7 @@ export function JobTable({ jobs }: JobTableProps) {
               </td>
               <td className="rf-muted">{new Date(job.createdAt).toLocaleString()}</td>
               <td>
-                <Link to={`${base}/jobs/${job.id}`} className="rf-row-action" aria-label="Open job">
+                <Link to={jobHref(job.id)} className="rf-row-action" aria-label="Open job">
                   ⋮
                 </Link>
               </td>

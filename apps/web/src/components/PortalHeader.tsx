@@ -2,12 +2,14 @@ import { Permission } from '@retailfixit/shared';
 import { Link, useLocation } from 'react-router-dom';
 
 import { pageMetaForPath } from '../lib/portal-config.js';
+import { useDocumentTitle } from '../lib/use-document-title.js';
 import { useAuth } from '../features/auth/AuthProvider.js';
 
 export function PortalHeader() {
   const { pathname } = useLocation();
   const { can } = useAuth();
   const meta = pageMetaForPath(pathname);
+  useDocumentTitle(meta.title);
   const isJobDetail = /\/jobs\/[^/]+$/.test(pathname) && !pathname.endsWith('/new');
 
   return (

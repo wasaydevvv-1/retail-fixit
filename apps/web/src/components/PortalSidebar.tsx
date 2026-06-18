@@ -14,7 +14,7 @@ export function PortalSidebar({ realtimeConnected, onLogout }: PortalSidebarProp
   const { user } = useAuth();
   if (!user) return null;
 
-  const navItems = navItemsForUser(user);
+  const navItems = navItemsForUser(user).filter((item) => item.enabled);
   const subtitle = portalSubtitle(user.roles);
   const roleLabel = primaryRoleLabel(user.roles);
 
@@ -33,33 +33,18 @@ export function PortalSidebar({ realtimeConnected, onLogout }: PortalSidebarProp
       </div>
 
       <nav className="rf-nav" aria-label="Main navigation">
-        {navItems.map((item) =>
-          item.enabled ? (
-            <NavLink
-              key={item.id}
-              to={item.path}
-              end={item.end}
-              className={({ isActive }) => `rf-nav-link${isActive ? ' rf-nav-link--active' : ''}`}
-              title={item.label}
-            >
-              <NavIcon name={item.icon} />
-              <span>{item.label}</span>
-            </NavLink>
-          ) : (
-            <span
-              key={item.id}
-              className="rf-nav-link rf-nav-link--disabled"
-              title={item.lockReason}
-              aria-disabled="true"
-            >
-              <NavIcon name={item.icon} />
-              <span>{item.label}</span>
-              <span className="rf-nav-lock" aria-hidden>
-                🔒
-              </span>
-            </span>
-          ),
-        )}
+        {navItems.map((item) => (
+          <NavLink
+            key={item.id}
+            to={item.path}
+            end={item.end}
+            className={({ isActive }) => `rf-nav-link${isActive ? ' rf-nav-link--active' : ''}`}
+            title={item.label}
+          >
+            <NavIcon name={item.icon} />
+            <span>{item.label}</span>
+          </NavLink>
+        ))}
       </nav>
 
       <div className="rf-sidebar-footer">

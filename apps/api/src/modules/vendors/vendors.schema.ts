@@ -33,4 +33,5 @@ export const vendorListQuerySchema = z.object({
       const list = Array.isArray(val) ? val : val.split(',').map((s) => s.trim());
       return list.filter(Boolean);
     }),
+  tenantId: z.string().min(1).optional(),
 });

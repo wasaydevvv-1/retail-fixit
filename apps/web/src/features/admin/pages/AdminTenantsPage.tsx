@@ -1,24 +1,29 @@
 import { Link } from 'react-router-dom';
+import { Permission } from '@retailfixit/shared';
 
 import { ErrorAlert } from '../../../components/ErrorAlert.js';
 import { useAuth } from '../../auth/AuthProvider.js';
+import { CreateTenantForm } from '../components/CreateTenantForm.js';
 import { useTenants } from '../hooks/useTenants.js';
 
 export function AdminTenantsPage() {
-  const { user } = useAuth();
-  const { data, isLoading, isError, error } = useTenants(true);
+  const { user, can } = useAuth();
+  const { data, isLoading, isError, error, refetch } = useTenants(true);
 
   return (
     <div className="rf-page">
       <p className="hint rf-page-lede">
-        Platform operator view. Create a <strong>tenant administrator</strong> for each business
-        tenant. After that, each tenant admin manages their own staff.
+        Platform operator view. Create business tenants, then provision a{' '}
+        <strong>tenant administrator</strong> for each one. Tenant admins manage their own staff.
       </p>
+
+      {can(Permission.TenantsManage) && <CreateTenantForm onCreated={() => void refetch()} />}
 
       <section className="rf-panel info-card">
         <h3>Setup flow</h3>
         <ol className="rf-insight-list">
-          <li>Create a <strong>Tenant administrator</strong> for each business tenant (Users & access).</li>
+          <li>Create a business tenant (above) or use an existing one like Acme or Beta.</li>
+          <li>Create a <strong>Tenant administrator</strong> for that tenant (Users & access).</li>
           <li>Share sign-in details with each tenant administrator.</li>
           <li>Each tenant admin signs in and adds their own staff — data stays separate per tenant.</li>
         </ol>
@@ -43,6 +48,7 @@ export function AdminTenantsPage() {
               <thead>
                 <tr>
                   <th>Name</th>
+                  <th>Tenant id</th>
                   <th>Created</th>
                 </tr>
               </thead>
@@ -50,6 +56,9 @@ export function AdminTenantsPage() {
                 {(data ?? []).map((t) => (
                   <tr key={t.id}>
                     <td>{t.name}</td>
+                    <td>
+                      <code>{t.id}</code>
+                    </td>
                     <td>{new Date(t.createdAt).toLocaleDateString()}</td>
                   </tr>
                 ))}

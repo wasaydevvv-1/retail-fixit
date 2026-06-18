@@ -5,8 +5,10 @@ import type { VendorRegisterRequest, VendorRegisterResponse, VendorRegistrationC
 import { ErrorAlert } from '../../components/ErrorAlert.js';
 import { apiFetch } from '../../lib/api-client.js';
 import { friendlyError, friendlyUserMessage } from '../../lib/user-messages.js';
+import { useDocumentTitle } from '../../lib/use-document-title.js';
 
 export function VendorRegisterPage() {
+  useDocumentTitle('Vendor registration');
   const [config, setConfig] = useState<VendorRegistrationConfigResponse | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [userName, setUserName] = useState('');

@@ -13,6 +13,7 @@ import {
   setCachedJobList,
 } from '../../cache/job-list-cache.js';
 import { publishJobCreated } from '../../events/publisher.js';
+import { resolveDataTenantId } from '../../lib/tenant-scope.js';
 import type { AuthContext } from '../auth/auth.types.js';
 import { recordAudit } from '../audit/audit.service.js';
 import {
@@ -61,6 +62,7 @@ export async function getJobList(
   auth: AuthContext,
   query: JobListQuery,
 ): Promise<JobListResponse> {
+  const tenantId = resolveDataTenantId(auth, query.tenantId);
   const normalized = {
     page: query.page ?? 1,
     pageSize: query.pageSize ?? 20,
@@ -69,28 +71,30 @@ export async function getJobList(
     search: query.search?.trim(),
   };
 
-  const cached = await getCachedJobList(auth.tenantId, normalized);
+  const cached = await getCachedJobList(tenantId, normalized);
   if (cached) return cached;
 
-  const result = await listJobs(auth.tenantId, normalized);
-  await setCachedJobList(auth.tenantId, normalized, result);
+  const result = await listJobs(tenantId, normalized);
+  await setCachedJobList(tenantId, normalized, result);
   return result;
 }
 
 export async function getJobDetail(
   auth: AuthContext,
   jobId: string,
+  requestedTenantId?: string,
 ): Promise<JobDetailResponse | null> {
-  const job = await findJobById(auth.tenantId, jobId);
+  const tenantId = resolveDataTenantId(auth, requestedTenantId);
+  const job = await findJobById(tenantId, jobId);
   if (!job) return null;
 
   const assignableVendors = await getAssignableVendorsForJob(
-    auth.tenantId,
+    tenantId,
     job.requiredSkills ?? [],
   );
 
   const recommendation =
-    (await findRecommendationByJobId(auth.tenantId, jobId)) ?? undefined;
+    (await findRecommendationByJobId(tenantId, jobId)) ?? undefined;
 
   return {
     job,

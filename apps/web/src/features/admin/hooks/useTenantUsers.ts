@@ -1,14 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
-import type { TenantUserSummary } from '@retailfixit/shared';
+import type { TenantUserSummary, UserRole } from '@retailfixit/shared';
 
 import { apiFetch } from '../../../lib/api-client.js';
 
-export function useTenantUsers(tenantId?: string) {
+export function useTenantUsers(options?: { tenantId?: string; role?: UserRole }) {
+  const params = new URLSearchParams();
+  if (options?.tenantId) params.set('tenantId', options.tenantId);
+  if (options?.role) params.set('role', options.role);
+  const qs = params.toString();
+
   return useQuery({
-    queryKey: ['users', 'tenant', tenantId ?? 'self'],
+    queryKey: ['users', 'tenant', options?.tenantId ?? 'all', options?.role ?? 'all'],
     queryFn: () =>
-      apiFetch<TenantUserSummary[]>(
-        tenantId ? `/users?tenantId=${encodeURIComponent(tenantId)}` : '/users',
-      ),
+      apiFetch<TenantUserSummary[]>(`/users${qs ? `?${qs}` : ''}`),
   });
 }
